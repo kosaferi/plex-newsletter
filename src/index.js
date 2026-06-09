@@ -17,8 +17,8 @@ const NO_UI = process.argv.includes('--no-ui');
 
   if (!NO_UI) {
     const port = config.preview.port;
-    webServer.listen(port, () => {
-      logger.info(`Web UI running at http://localhost:${port}`);
+    webServer.listen(port, '0.0.0.0', () => {
+      logger.info(`Web UI running at http://0.0.0.0:${port} (all interfaces)`);
     });
   }
 
