@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>{{newsletterTitle}}</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0a0a0f;
+    color: #e8e2d5;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 640px; margin: 0 auto; }
+
+  /* ── HEADER ── */
+  .header {
+    background: linear-gradient(135deg, #0d0d1a 0%, #1a0d2e 50%, #0d1a1a 100%);
+    padding: 48px 40px 40px;
+    border-bottom: 1px solid rgba(230,180,80,0.2);
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 220px; height: 220px;
+    background: radial-gradient(circle, rgba(230,180,80,0.12) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .header-label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: #e6b450;
+    margin-bottom: 10px;
+  }
+  .header-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 52px;
+    letter-spacing: 2px;
+    color: #fff;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .header-subtitle {
+    font-size: 13px;
+    color: rgba(232,226,213,0.5);
+    letter-spacing: 1px;
+  }
+  .header-period {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 6px 14px;
+    border: 1px solid rgba(230,180,80,0.35);
+    border-radius: 2px;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #e6b450;
+  }
+
+  /* ── PERSONAL GREETING ── */
+  .greeting {
+    background: #111118;
+    padding: 32px 40px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .greeting-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    color: #e6b450;
+    letter-spacing: 1.5px;
+  }
+  .greeting-text {
+    font-size: 14px;
+    color: rgba(232,226,213,0.65);
+    margin-top: 6px;
+    line-height: 1.6;
+  }
+
+  /* ── SECTION HEADERS ── */
+  .section {
+    padding: 32px 40px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .section-label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: #e6b450;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(230,180,80,0.2);
+  }
+
+  /* ── STAT CARDS ── */
+  .stat-grid {
+    display: table;
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 10px;
+    margin: -10px;
+  }
+  .stat-row { display: table-row; }
+  .stat-card {
+    display: table-cell;
+    background: #16161f;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 4px;
+    padding: 20px;
+    text-align: center;
+    width: 33%;
+  }
+  .stat-number {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 38px;
+    color: #e6b450;
+    letter-spacing: 1px;
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(232,226,213,0.4);
+    margin-top: 6px;
+  }
+
+  /* ── RANK CARD ── */
+  .rank-card {
+    background: linear-gradient(135deg, #1a1228 0%, #16161f 100%);
+    border: 1px solid rgba(230,180,80,0.25);
+    border-radius: 4px;
+    padding: 24px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .rank-badge {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 48px;
+    color: #e6b450;
+    line-height: 1;
+    min-width: 60px;
+    text-align: center;
+  }
+  .rank-badge span {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: rgba(230,180,80,0.6);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 400;
+  }
+  .rank-info { flex: 1; }
+  .rank-title {
+    font-size: 14px;
+    color: #e8e2d5;
+    margin-bottom: 4px;
+  }
+  .rank-sub {
+    font-size: 12px;
+    color: rgba(232,226,213,0.4);
+  }
+
+  /* ── WATCH HISTORY ── */
+  .history-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    gap: 14px;
+  }
+  .history-item:last-child { border-bottom: none; }
+  .history-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    color: rgba(230,180,80,0.3);
+    min-width: 24px;
+    text-align: right;
+  }
+  .history-info { flex: 1; }
+  .history-title {
+    font-size: 13px;
+    color: #e8e2d5;
+    font-weight: 400;
+  }
+  .history-meta {
+    font-size: 11px;
+    color: rgba(232,226,213,0.35);
+    margin-top: 2px;
+    letter-spacing: 0.5px;
+  }
+  .history-dur {
+    font-size: 11px;
+    color: rgba(232,226,213,0.3);
+    white-space: nowrap;
+  }
+
+  /* ── RECENTLY ADDED ── */
+  .media-grid {
+    display: table;
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 8px;
+    margin: -8px;
+  }
+  .media-row { display: table-row; }
+  .media-cell {
+    display: table-cell;
+    width: 50%;
+    vertical-align: top;
+  }
+  .media-card {
+    background: #16161f;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .media-card-body { padding: 14px; }
+  .media-type-badge {
+    display: inline-block;
+    font-size: 8px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #e6b450;
+    border: 1px solid rgba(230,180,80,0.3);
+    padding: 2px 6px;
+    border-radius: 2px;
+    margin-bottom: 6px;
+  }
+  .media-title {
+    font-size: 13px;
+    color: #e8e2d5;
+    font-weight: 400;
+    line-height: 1.3;
+  }
+  .media-year {
+    font-size: 11px;
+    color: rgba(232,226,213,0.3);
+    margin-top: 2px;
+  }
+  .media-summary {
+    font-size: 11px;
+    color: rgba(232,226,213,0.4);
+    margin-top: 6px;
+    line-height: 1.5;
+  }
+
+  /* ── TOP LISTS ── */
+  .top-list { list-style: none; }
+  .top-list li {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    gap: 14px;
+    font-size: 13px;
+  }
+  .top-list li:last-child { border-bottom: none; }
+  .top-pos {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    color: rgba(230,180,80,0.25);
+    min-width: 28px;
+    text-align: right;
+  }
+  .top-pos.gold { color: #e6b450; }
+  .top-name { flex: 1; color: #e8e2d5; }
+  .top-plays {
+    font-size: 11px;
+    color: rgba(232,226,213,0.35);
+    letter-spacing: 0.5px;
+  }
+
+  /* ── NEW USERS ── */
+  .new-user-pill {
+    display: inline-block;
+    background: rgba(230,180,80,0.08);
+    border: 1px solid rgba(230,180,80,0.2);
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 12px;
+    color: #e6b450;
+    margin: 4px;
+  }
+
+  /* ── FOOTER ── */
+  .footer {
+    background: #0a0a0f;
+    padding: 32px 40px;
+    text-align: center;
+    border-top: 1px solid rgba(255,255,255,0.05);
+  }
+  .footer-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 4px;
+    color: rgba(232,226,213,0.2);
+    margin-bottom: 10px;
+  }
+  .footer-text {
+    font-size: 11px;
+    color: rgba(232,226,213,0.2);
+    line-height: 1.7;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── HIGHLIGHT BOX ── */
+  .highlight {
+    background: rgba(230,180,80,0.06);
+    border-left: 3px solid #e6b450;
+    border-radius: 0 4px 4px 0;
+    padding: 14px 18px;
+    margin-top: 16px;
+    font-size: 13px;
+    color: rgba(232,226,213,0.7);
+    line-height: 1.6;
+  }
+  .highlight strong { color: #e6b450; font-weight: 500; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-label">📺 Your Weekly Report</div>
+    <div class="header-title">{{newsletterTitle}}</div>
+    <div class="header-subtitle">{{serverName}}</div>
+    <div class="header-period">{{periodLabel}}</div>
+  </div>
+
+  <!-- PERSONAL GREETING -->
+  <div class="greeting">
+    <div class="greeting-name">Hey, {{userName}} 👋</div>
+    <div class="greeting-text">
+      Here's your personalized rundown of everything that happened on Plex this week.
+      {{#if totalHours}}You clocked in <strong style="color:#e6b450">{{totalHours}} hours</strong> of watch time — {{watchComment}}{{/if}}
+    </div>
+  </div>
+
+  <!-- YOUR STATS -->
+  <div class="section">
+    <div class="section-label">Your Stats This Week</div>
+    <div class="stat-grid">
+      <div class="stat-row">
+        <div class="stat-card">
+          <div class="stat-number">{{totalWatched}}</div>
+          <div class="stat-label">Items Watched</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">{{totalHours}}</div>
+          <div class="stat-label">Hours Watched</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">{{streakDays}}</div>
+          <div class="stat-label">Active Days</div>
+        </div>
+      </div>
+    </div>
+
+    {{#if favoriteGenre}}
+    <div class="highlight">
+      🎭 Your most-watched genre this week was <strong>{{favoriteGenre}}</strong>.
+      {{#if mostWatchedShow}}
+      You binged <strong>{{mostWatchedShow.episodes}} episodes</strong> of <strong>{{mostWatchedShow.title}}</strong>.
+      {{/if}}
+    </div>
+    {{/if}}
+  </div>
+
+  <!-- RANK -->
+  {{#if userRank}}
+  <div class="section">
+    <div class="section-label">Your Rank</div>
+    <div class="rank-card">
+      <div class="rank-badge">
+        #{{userRank}}
+        <span>of {{totalUsers}}</span>
+      </div>
+      <div class="rank-info">
+        <div class="rank-title">{{rankTitle}}</div>
+        <div class="rank-sub">Based on total plays this week across the server</div>
+      </div>
+    </div>
+  </div>
+  {{/if}}
+
+  <!-- WATCH HISTORY -->
+  {{#if watchedItems.length}}
+  <div class="section">
+    <div class="section-label">What You Watched</div>
+    {{#each watchedItems}}
+    <div class="history-item">
+      <div class="history-num">{{add @index 1}}</div>
+      <div class="history-info">
+        <div class="history-title">
+          {{#if grandparent_title}}{{grandparent_title}} — {{/if}}{{title}}
+        </div>
+        <div class="history-meta">
+          {{media_type}} · {{formatDate started}}
+        </div>
+      </div>
+      <div class="history-dur">{{formatMins duration}}</div>
+    </div>
+    {{/each}}
+  </div>
+  {{/if}}
+
+  <!-- SERVER TOP CHARTS -->
+  {{#if global.topMovies.length}}
+  <div class="section">
+    <div class="section-label">Server Top Movies</div>
+    <ul class="top-list">
+      {{#each global.topMovies}}
+      <li>
+        <div class="top-pos {{#if @first}}gold{{/if}}">{{add @index 1}}</div>
+        <div class="top-name">{{title}}</div>
+        <div class="top-plays">{{total_plays}} plays</div>
+      </li>
+      {{/each}}
+    </ul>
+  </div>
+  {{/if}}
+
+  {{#if global.topShows.length}}
+  <div class="section">
+    <div class="section-label">Server Top Shows</div>
+    <ul class="top-list">
+      {{#each global.topShows}}
+      <li>
+        <div class="top-pos {{#if @first}}gold{{/if}}">{{add @index 1}}</div>
+        <div class="top-name">{{title}}</div>
+        <div class="top-plays">{{total_plays}} plays</div>
+      </li>
+      {{/each}}
+    </ul>
+  </div>
+  {{/if}}
+
+  <!-- RECENTLY ADDED -->
+  {{#if recentlyAdded.length}}
+  <div class="section">
+    <div class="section-label">New on Plex This Week</div>
+    <div class="media-grid">
+      {{#each recentlyAdded}}
+      {{#if @even}}<div class="media-row">{{/if}}
+      <div class="media-cell">
+        <div class="media-card">
+          <div class="media-card-body">
+            <div class="media-type-badge">{{type}}</div>
+            <div class="media-title">{{#if grandparentTitle}}{{grandparentTitle}}{{else}}{{title}}{{/if}}</div>
+            {{#if year}}<div class="media-year">{{year}}</div>{{/if}}
+            {{#if summary}}<div class="media-summary">{{truncate summary 90}}</div>{{/if}}
+          </div>
+        </div>
+      </div>
+      {{#if @odd}}</div>{{/if}}
+      {{/each}}
+    </div>
+  </div>
+  {{/if}}
+
+  <!-- NEW USERS -->
+  {{#if newUsers.length}}
+  <div class="section">
+    <div class="section-label">New Members This Week</div>
+    <div style="padding: 8px 0;">
+      {{#each newUsers}}
+      <span class="new-user-pill">👤 {{friendly_name}}</span>
+      {{/each}}
+    </div>
+  </div>
+  {{/if}}
+
+  <!-- SERVER TOTALS -->
+  <div class="section">
+    <div class="section-label">Server Activity</div>
+    <div class="stat-grid">
+      <div class="stat-row">
+        <div class="stat-card">
+          <div class="stat-number">{{global.totalPlays}}</div>
+          <div class="stat-label">Total Plays</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">{{recentlyAddedCount}}</div>
+          <div class="stat-label">Items Added</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">{{newUsersCount}}</div>
+          <div class="stat-label">New Users</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="footer-logo">PLEX NEWSLETTER</div>
+    <div class="footer-text">
+      {{serverName}} · Auto-generated weekly digest<br/>
+      Week of {{periodLabel}}
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

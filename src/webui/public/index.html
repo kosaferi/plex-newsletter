@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>PlexMail — Newsletter Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0c0c14;--bg2:#111120;--bg3:#16161f;--bg4:#1d1d2e;
+  --gold:#e6b450;--gold2:rgba(230,180,80,0.10);--gold3:rgba(230,180,80,0.28);
+  --text:#e8e2d5;--text2:rgba(232,226,213,0.55);--text3:rgba(232,226,213,0.28);
+  --border:rgba(255,255,255,0.07);--success:#52c07a;--danger:#e05252;--info:#5b9ef5;
+  --sidebar:220px;
+}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-weight:300;display:flex;min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* ── SIDEBAR ──────────────────────────────────────── */
+.sidebar{width:var(--sidebar);min-height:100vh;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:100}
+.sidebar-logo{padding:26px 24px 18px;border-bottom:1px solid var(--border)}
+.sidebar-logo-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:#fff}
+.sidebar-logo-sub{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-top:3px}
+.sidebar-nav{flex:1;padding:14px 0}
+.nav-item{display:flex;align-items:center;gap:11px;padding:10px 24px;cursor:pointer;font-size:13px;color:var(--text2);transition:all 0.12s;border-left:2px solid transparent;user-select:none}
+.nav-item:hover{color:var(--text);background:rgba(255,255,255,0.025)}
+.nav-item.active{color:var(--gold);border-left-color:var(--gold);background:var(--gold2)}
+.nav-icon{font-size:15px;width:18px;text-align:center}
+.sidebar-footer{padding:18px 24px;border-top:1px solid var(--border)}
+.sidebar-badge{display:inline-block;padding:3px 8px;background:var(--gold2);border:1px solid var(--gold3);border-radius:3px;font-size:9px;letter-spacing:1.5px;color:var(--gold);text-transform:uppercase;margin-bottom:6px}
+.sidebar-cron{font-size:10px;color:var(--text3);letter-spacing:0.5px}
+
+/* ── LIVE DOT ─────────────────────────────────────── */
+.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--success);margin-right:5px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ── MAIN ─────────────────────────────────────────── */
+.main{margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column;min-height:100vh}
+.page{display:none;flex-direction:column;flex:1}
+.page.active{display:flex}
+
+/* ── PAGE HEADER ──────────────────────────────────── */
+.page-header{padding:28px 40px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.page-title{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1.5px;color:#fff}
+.page-sub{font-size:11px;color:var(--text3);margin-top:3px;letter-spacing:0.3px}
+.header-actions{display:flex;gap:10px;align-items:center}
+
+/* ── BUTTONS ──────────────────────────────────────── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:3px;font-size:11px;font-family:'DM Sans',sans-serif;font-weight:500;letter-spacing:0.5px;cursor:pointer;border:none;transition:all 0.13s;text-transform:uppercase;white-space:nowrap}
+.btn-primary{background:var(--gold);color:#0c0c14}
+.btn-primary:hover{background:#f0c060}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border)}
+.btn-ghost:hover{border-color:var(--gold3);color:var(--gold)}
+.btn-success{background:rgba(82,192,122,0.12);color:var(--success);border:1px solid rgba(82,192,122,0.25)}
+.btn-danger{background:rgba(224,82,82,0.08);color:var(--danger);border:1px solid rgba(224,82,82,0.25)}
+.btn-danger:hover{background:rgba(224,82,82,0.15)}
+.btn-sm{padding:6px 11px;font-size:10px}
+.btn:disabled{opacity:.35;cursor:not-allowed;pointer-events:none}
+
+/* ── PAGE CONTENT ─────────────────────────────────── */
+.page-content{padding:28px 40px;flex:1;overflow-y:auto}
+
+/* ── STAT CARDS ───────────────────────────────────── */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:26px}
+.stat-card{background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:20px 22px}
+.stat-num{font-family:'Bebas Neue',sans-serif;font-size:34px;color:var(--gold);line-height:1}
+.stat-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-top:5px}
+.stat-change{font-size:10px;color:var(--text3);margin-top:3px}
+
+/* ── SECTION ──────────────────────────────────────── */
+.section{background:var(--bg3);border:1px solid var(--border);border-radius:5px;overflow:hidden;margin-bottom:18px}
+.section-head{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.section-title{font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold)}
+.section-body{padding:20px}
+
+/* ── TABLES ───────────────────────────────────────── */
+.data-table{width:100%;border-collapse:collapse}
+.data-table th{text-align:left;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);padding:10px 16px;border-bottom:1px solid var(--border);font-weight:400}
+.data-table td{padding:11px 16px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
+.data-table tr:last-child td{border-bottom:none}
+.data-table tbody tr:hover td{background:rgba(255,255,255,0.018)}
+
+/* ── AVATAR ───────────────────────────────────────── */
+.avatar{width:30px;height:30px;border-radius:50%;background:var(--bg4);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:var(--gold);flex-shrink:0;text-transform:uppercase}
+.user-cell{display:flex;align-items:center;gap:10px}
+
+/* ── PILLS ────────────────────────────────────────── */
+.pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:9px;letter-spacing:1px;text-transform:uppercase}
+.pill-green{background:rgba(82,192,122,0.1);color:var(--success);border:1px solid rgba(82,192,122,0.2)}
+.pill-gray{background:var(--bg4);color:var(--text3);border:1px solid var(--border)}
+.pill-gold{background:var(--gold2);color:var(--gold);border:1px solid var(--gold3)}
+.pill-blue{background:rgba(91,158,245,0.1);color:var(--info);border:1px solid rgba(91,158,245,0.2)}
+
+/* ── FORM ─────────────────────────────────────────── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group.span2{grid-column:1/-1}
+label{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3)}
+input,select,textarea{background:var(--bg4);border:1px solid var(--border);border-radius:3px;padding:9px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:border 0.13s;width:100%}
+input:focus,select:focus,textarea:focus{border-color:var(--gold3)}
+input::placeholder,textarea::placeholder{color:var(--text3)}
+input[type=checkbox]{width:15px;height:15px;accent-color:var(--gold);cursor:pointer}
+select option{background:var(--bg4)}
+.form-hint{font-size:10px;color:var(--text3);margin-top:2px;line-height:1.4}
+
+/* ── CONNECTION STATUS ────────────────────────────── */
+.conn-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
+.conn-row:last-child{border-bottom:none}
+.conn-info{display:flex;align-items:center;gap:10px}
+.conn-icon{font-size:18px}
+.conn-name{font-size:13px;color:var(--text)}
+.conn-url{font-size:11px;color:var(--text3);margin-top:1px}
+.conn-status{display:flex;align-items:center;gap:8px}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--text3);flex-shrink:0}
+.status-dot.ok{background:var(--success)}
+.status-dot.fail{background:var(--danger)}
+.status-msg{font-size:11px;color:var(--text3)}
+
+/* ── TOP LISTS ────────────────────────────────────── */
+.top-list{list-style:none}
+.top-list li{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--border);font-size:12px}
+.top-list li:last-child{border-bottom:none}
+.top-pos{font-family:'Bebas Neue',sans-serif;font-size:19px;color:var(--text3);min-width:22px;text-align:right}
+.top-pos.gold{color:var(--gold)}
+.top-name{flex:1;color:var(--text)}
+.top-plays{font-size:10px;color:var(--text3)}
+
+/* ── ACTIVITY STREAM ──────────────────────────────── */
+.activity-card{background:var(--bg4);border:1px solid var(--border);border-radius:4px;padding:12px 16px;display:flex;align-items:center;gap:14px;margin-bottom:8px}
+.activity-card:last-child{margin-bottom:0}
+.activity-info{flex:1}
+.activity-title{font-size:13px;color:var(--text)}
+.activity-meta{font-size:11px;color:var(--text3);margin-top:2px}
+.activity-progress{height:2px;background:var(--border);border-radius:1px;margin-top:6px;overflow:hidden}
+.activity-progress-fill{height:100%;background:var(--gold);border-radius:1px}
+
+/* ── PREVIEW ──────────────────────────────────────── */
+.preview-layout{display:grid;grid-template-columns:220px 1fr;gap:18px;align-items:start}
+.user-btn{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:9px;font-size:12px;color:var(--text2);margin-bottom:7px;transition:all 0.12s;text-align:left}
+.user-btn:hover{border-color:var(--gold3);color:var(--text)}
+.user-btn.active{border-color:var(--gold);color:var(--gold);background:var(--gold2)}
+.preview-panel{background:var(--bg3);border:1px solid var(--border);border-radius:5px;overflow:hidden}
+.preview-toolbar{padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.preview-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text3)}
+iframe#preview-iframe{width:100%;height:660px;border:none;display:none}
+.preview-placeholder{padding:60px 40px;text-align:center;color:var(--text3);font-size:13px}
+.preview-loading{padding:40px;text-align:center;color:var(--text3);font-size:12px;display:none}
+
+/* ── SEND PAGE ────────────────────────────────────── */
+.send-layout{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.send-log{background:var(--bg4);border-radius:3px;padding:14px;height:220px;overflow-y:auto;font-size:11px;font-family:monospace;color:var(--text2);line-height:1.9}
+.send-log .ok{color:var(--success)}
+.send-log .fail{color:var(--danger)}
+.send-log .info{color:var(--gold)}
+.progress-wrap{height:3px;background:var(--bg4);border-radius:2px;margin-bottom:10px;overflow:hidden}
+.progress-fill{height:100%;background:var(--gold);border-radius:2px;width:0;transition:width 0.4s}
+
+/* ── INLINE EMAIL EDIT ────────────────────────────── */
+.email-edit-wrap{display:flex;align-items:center;gap:6px}
+.email-display{font-size:12px;color:var(--text2)}
+.email-input{display:none;font-size:12px;padding:4px 8px;border-radius:3px}
+
+/* ── TOAST ────────────────────────────────────────── */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:12px 18px;font-size:12px;color:var(--text);z-index:9999;transform:translateY(16px);opacity:0;transition:all 0.22s;max-width:300px;line-height:1.4}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.ok{border-left:3px solid var(--success)}
+.toast.err{border-left:3px solid var(--danger)}
+
+/* ── OVERLAY ──────────────────────────────────────── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(8,8,16,0.8);z-index:500;align-items:center;justify-content:center;flex-direction:column;gap:14px}
+.overlay.show{display:flex}
+.spinner{width:32px;height:32px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.overlay-text{font-size:12px;color:var(--text2);letter-spacing:1px}
+
+/* ── RECENTLY ADDED GRID ──────────────────────────── */
+.media-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.media-card{background:var(--bg4);border:1px solid var(--border);border-radius:4px;padding:12px}
+.media-badge{display:inline-block;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);border:1px solid var(--gold3);padding:2px 6px;border-radius:2px;margin-bottom:5px}
+.media-title{font-size:12px;color:var(--text);line-height:1.3}
+.media-sub{font-size:10px;color:var(--text3);margin-top:3px}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-title">PlexMail</div>
+    <div class="sidebar-logo-sub">Newsletter Manager</div>
+  </div>
+  <div class="sidebar-nav">
+    <div class="nav-item active" data-page="dashboard"><span class="nav-icon">📊</span>Dashboard</div>
+    <div class="nav-item" data-page="preview"><span class="nav-icon">👁</span>Preview</div>
+    <div class="nav-item" data-page="send"><span class="nav-icon">📨</span>Send</div>
+    <div class="nav-item" data-page="users"><span class="nav-icon">👥</span>Users</div>
+    <div class="nav-item" data-page="settings"><span class="nav-icon">⚙️</span>Settings</div>
+  </div>
+  <div class="sidebar-footer">
+    <div class="sidebar-badge">Schedule</div>
+    <div class="sidebar-cron" id="sidebar-cron">Loading…</div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+
+<!-- ══════════════════════════════════════════════════
+     DASHBOARD
+══════════════════════════════════════════════════ -->
+<div id="page-dashboard" class="page active">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Dashboard</div>
+      <div class="page-sub" id="dash-period">Loading…</div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-ghost btn-sm" onclick="refreshDashboard()">↺ Refresh</button>
+      <button class="btn btn-primary btn-sm" onclick="goPage('send')">Send Now →</button>
+    </div>
+  </div>
+  <div class="page-content">
+    <div class="stat-grid" id="stat-grid">
+      <div class="stat-card"><div class="stat-num" id="s-plays">—</div><div class="stat-label">Total Plays</div></div>
+      <div class="stat-card"><div class="stat-num" id="s-added">—</div><div class="stat-label">Items Added</div></div>
+      <div class="stat-card"><div class="stat-num" id="s-users">—</div><div class="stat-label">Active Users</div></div>
+      <div class="stat-card"><div class="stat-num" id="s-new">—</div><div class="stat-label">New Members</div></div>
+    </div>
+
+    <!-- Live streams -->
+    <div class="section">
+      <div class="section-head">
+        <span class="section-title"><span class="live-dot"></span>Live Streams</span>
+        <button class="btn btn-ghost btn-sm" onclick="loadActivity()">↺</button>
+      </div>
+      <div class="section-body" id="activity-body" style="padding:16px">
+        <div style="color:var(--text3);font-size:13px">Loading live sessions…</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+      <div class="section">
+        <div class="section-head"><span class="section-title">Top Movies</span></div>
+        <div class="section-body"><ul class="top-list" id="top-movies"><li style="color:var(--text3);font-size:12px">Loading…</li></ul></div>
+      </div>
+      <div class="section">
+        <div class="section-head"><span class="section-title">Top Shows</span></div>
+        <div class="section-body"><ul class="top-list" id="top-shows"><li style="color:var(--text3);font-size:12px">Loading…</li></ul></div>
+      </div>
+    </div>
+
+    <!-- Recently added -->
+    <div class="section" style="margin-top:18px">
+      <div class="section-head"><span class="section-title">Recently Added</span></div>
+      <div class="section-body">
+        <div class="media-grid" id="recently-added">
+          <div style="color:var(--text3);font-size:12px">Loading…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     PREVIEW
+══════════════════════════════════════════════════ -->
+<div id="page-preview" class="page">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Email Preview</div>
+      <div class="page-sub">See exactly what each user will receive in their inbox</div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-ghost btn-sm" onclick="regeneratePreview()">↺ Regenerate</button>
+    </div>
+  </div>
+  <div class="page-content">
+    <div class="preview-layout">
+      <div>
+        <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:10px">Eligible Users</div>
+        <div id="preview-user-list"><div style="color:var(--text3);font-size:12px">Loading…</div></div>
+      </div>
+      <div class="preview-panel">
+        <div class="preview-toolbar">
+          <span class="preview-label" id="preview-label">No preview loaded</span>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-ghost btn-sm" id="btn-send-preview" style="display:none" onclick="sendToCurrentPreviewUser()">📨 Send to user</button>
+          </div>
+        </div>
+        <div class="preview-placeholder" id="preview-placeholder">Select a user on the left to preview their personalised newsletter</div>
+        <div class="preview-loading" id="preview-loading">Generating preview — collecting stats…</div>
+        <iframe id="preview-iframe"></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     SEND
+══════════════════════════════════════════════════ -->
+<div id="page-send" class="page">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Send Newsletter</div>
+      <div class="page-sub">Dispatch the weekly digest — to all or selected users</div>
+    </div>
+  </div>
+  <div class="page-content">
+    <div class="send-layout">
+      <div>
+        <div class="section">
+          <div class="section-head">
+            <span class="section-title">Recipients</span>
+            <label style="display:flex;align-items:center;gap:6px;font-size:10px;color:var(--text2);text-transform:none;letter-spacing:0">
+              <input type="checkbox" id="select-all" onchange="toggleAll(this)"/> Select all
+            </label>
+          </div>
+          <table class="data-table" style="min-width:0">
+            <thead><tr><th style="width:36px"></th><th>User</th><th>Email</th></tr></thead>
+            <tbody id="send-tbody"><tr><td colspan="3" style="color:var(--text3);padding:20px;font-size:12px">Loading users…</td></tr></tbody>
+          </table>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-primary" onclick="sendSelected()">📨 Send to Selected</button>
+          <button class="btn btn-ghost" onclick="sendAll()">Send to All</button>
+        </div>
+      </div>
+      <div>
+        <div class="section">
+          <div class="section-head"><span class="section-title">Send Log</span></div>
+          <div style="padding:12px">
+            <div class="progress-wrap"><div class="progress-fill" id="send-progress"></div></div>
+            <div class="send-log" id="send-log"><span style="color:var(--text3)">Waiting to send…</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     USERS
+══════════════════════════════════════════════════ -->
+<div id="page-users" class="page">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Users</div>
+      <div class="page-sub">Users from Tautulli — only those with an email receive the newsletter</div>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="loadUsers()">↺ Refresh</button>
+  </div>
+  <div class="page-content">
+    <div class="section">
+      <div class="section-body" style="padding:0">
+        <table class="data-table">
+          <thead><tr><th>User</th><th>Email</th><th>Last Seen</th><th>Plays</th><th>Status</th><th></th></tr></thead>
+          <tbody id="users-tbody"><tr><td colspan="6" style="color:var(--text3);padding:20px;font-size:12px">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     SETTINGS
+══════════════════════════════════════════════════ -->
+<div id="page-settings" class="page">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Settings</div>
+      <div class="page-sub">Configure connections, schedule, and newsletter options</div>
+    </div>
+    <button class="btn btn-primary" onclick="saveSettings()">Save All Settings</button>
+  </div>
+  <div class="page-content" style="display:grid;grid-template-columns:1fr 1fr;gap:18px;align-content:start">
+
+    <!-- Plex -->
+    <div class="section">
+      <div class="section-head">
+        <span class="section-title">Plex</span>
+        <div class="conn-status">
+          <div class="status-dot" id="plex-dot"></div>
+          <span class="status-msg" id="plex-msg">Not tested</span>
+          <button class="btn btn-ghost btn-sm" onclick="testConn('plex')">Test</button>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="form-grid">
+          <div class="form-group span2">
+            <label>Server URL</label>
+            <input type="text" id="s-plexUrl" placeholder="http://192.168.1.x:32400"/>
+          </div>
+          <div class="form-group span2">
+            <label>Plex Token</label>
+            <input type="password" id="s-plexToken" placeholder="Your Plex token"/>
+            <span class="form-hint">Settings → Troubleshooting → Plex token</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tautulli -->
+    <div class="section">
+      <div class="section-head">
+        <span class="section-title">Tautulli</span>
+        <div class="conn-status">
+          <div class="status-dot" id="tautulli-dot"></div>
+          <span class="status-msg" id="tautulli-msg">Not tested</span>
+          <button class="btn btn-ghost btn-sm" onclick="testConn('tautulli')">Test</button>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="form-grid">
+          <div class="form-group span2">
+            <label>Tautulli URL</label>
+            <input type="text" id="s-tautulliUrl" placeholder="http://192.168.1.x:8181"/>
+          </div>
+          <div class="form-group span2">
+            <label>API Key</label>
+            <input type="password" id="s-tautulliApiKey" placeholder="Tautulli API key"/>
+            <span class="form-hint">Settings → Web Interface → API Key</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SMTP -->
+    <div class="section">
+      <div class="section-head">
+        <span class="section-title">SMTP / Email</span>
+        <div class="conn-status">
+          <div class="status-dot" id="smtp-dot"></div>
+          <span class="status-msg" id="smtp-msg">Not tested</span>
+          <button class="btn btn-ghost btn-sm" onclick="testConn('smtp')">Test</button>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>SMTP Host</label>
+            <input type="text" id="s-smtpHost" placeholder="smtp.gmail.com"/>
+          </div>
+          <div class="form-group">
+            <label>Port</label>
+            <input type="number" id="s-smtpPort" placeholder="587"/>
+          </div>
+          <div class="form-group">
+            <label>Username</label>
+            <input type="text" id="s-smtpUser" placeholder="you@gmail.com"/>
+          </div>
+          <div class="form-group">
+            <label>Password / App Password</label>
+            <input type="password" id="s-smtpPass" placeholder="••••••••••••••••"/>
+          </div>
+          <div class="form-group span2">
+            <label>From Address</label>
+            <input type="text" id="s-smtpFrom" placeholder='Plex Newsletter &lt;you@gmail.com&gt;'/>
+          </div>
+        </div>
+        <div style="margin-top:14px;display:flex;align-items:center;gap:10px">
+          <button class="btn btn-ghost btn-sm" onclick="sendTestEmail()">Send Test Email</button>
+          <input type="email" id="test-email-to" placeholder="To address (optional)" style="max-width:220px;padding:6px 10px;font-size:12px"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- Newsletter -->
+    <div class="section">
+      <div class="section-head"><span class="section-title">Newsletter</span></div>
+      <div class="section-body">
+        <div class="form-grid">
+          <div class="form-group span2">
+            <label>Newsletter Title</label>
+            <input type="text" id="s-newsletterTitle" placeholder="Weekly Plex Digest"/>
+          </div>
+          <div class="form-group">
+            <label>Send Schedule (cron)</label>
+            <input type="text" id="s-cronSchedule" placeholder="0 9 * * 1"/>
+            <span class="form-hint"><a href="https://crontab.guru" target="_blank" style="color:var(--gold)">crontab.guru</a> — default is Mon 9am</span>
+          </div>
+          <div class="form-group">
+            <label>Stats Window (days)</label>
+            <input type="number" id="s-statsDays" placeholder="7" min="1" max="30"/>
+          </div>
+          <div class="form-group span2">
+            <label>Admin Email</label>
+            <input type="email" id="s-adminEmail" placeholder="admin@example.com"/>
+            <span class="form-hint">Receives error alerts and send reports</span>
+          </div>
+        </div>
+        <div id="settings-msg" style="margin-top:12px;font-size:11px;color:var(--success)"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- OVERLAY -->
+<div class="overlay" id="overlay">
+  <div class="spinner"></div>
+  <div class="overlay-text" id="overlay-text">Working…</div>
+</div>
+
+<script>
+// ── STATE ────────────────────────────────────────────────
+let allUsers = [];
+let currentPreviewUserId = null;
+let previewCache = {};
+
+// ── NAVIGATION ───────────────────────────────────────────
+document.querySelectorAll('.nav-item').forEach(el => {
+  el.addEventListener('click', () => goPage(el.dataset.page));
+});
+
+function goPage(name) {
+  document.querySelectorAll('.nav-item').forEach(n =>
+    n.classList.toggle('active', n.dataset.page === name));
+  document.querySelectorAll('.page').forEach(p =>
+    p.classList.toggle('active', p.id === 'page-' + name));
+  if (name === 'dashboard') refreshDashboard();
+  if (name === 'users') loadUsers();
+  if (name === 'send') loadSendUsers();
+  if (name === 'preview') initPreviewPage();
+  if (name === 'settings') loadSettings();
+}
+
+// ── TOAST ────────────────────────────────────────────────
+function toast(msg, type = 'ok') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => t.classList.remove('show'), 3800);
+}
+
+function showOverlay(msg = 'Working…') {
+  document.getElementById('overlay-text').textContent = msg;
+  document.getElementById('overlay').classList.add('show');
+}
+function hideOverlay() { document.getElementById('overlay').classList.remove('show'); }
+
+// ── API HELPERS ──────────────────────────────────────────
+async function api(url, opts = {}) {
+  const res = await fetch(url, {
+    headers: { 'Content-Type': 'application/json' },
+    ...opts,
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error);
+  return data;
+}
+
+// ── DASHBOARD ────────────────────────────────────────────
+async function refreshDashboard() {
+  try {
+    const [stats, status] = await Promise.all([
+      api('/api/stats'),
+      api('/api/status'),
+    ]);
+    document.getElementById('s-plays').textContent = stats.totalPlays ?? '—';
+    document.getElementById('s-added').textContent = stats.recentlyAdded ?? '—';
+    document.getElementById('s-users').textContent = stats.totalUsers ?? '—';
+    document.getElementById('s-new').textContent = stats.newUsers ?? '—';
+    document.getElementById('dash-period').textContent =
+      `Last ${status.statsDays || 7} days · ${status.title || 'Plex Newsletter'}`;
+    document.getElementById('top-movies').innerHTML = renderTopList(stats.topMovies);
+    document.getElementById('top-shows').innerHTML = renderTopList(stats.topShows);
+  } catch (e) {
+    toast('Dashboard error: ' + e.message, 'err');
+  }
+  loadActivity();
+  loadRecentlyAdded();
+}
+
+function renderTopList(items) {
+  if (!items?.length) return '<li style="color:var(--text3);font-size:12px">No data yet</li>';
+  return items.map((item, i) =>
+    `<li>
+      <div class="top-pos ${i === 0 ? 'gold' : ''}">${i + 1}</div>
+      <div class="top-name">${esc(item.title)}</div>
+      <div class="top-plays">${item.total_plays} plays</div>
+    </li>`).join('');
+}
+
+async function loadActivity() {
+  const el = document.getElementById('activity-body');
+  try {
+    const data = await api('/api/activity');
+    const sessions = data.sessions || [];
+    if (!sessions.length) {
+      el.innerHTML = '<div style="color:var(--text3);font-size:12px">No active streams right now</div>';
+      return;
+    }
+    el.innerHTML = sessions.map(s => {
+      const pct = s.viewOffset && s.duration ? Math.round((s.viewOffset / s.duration) * 100) : 0;
+      const title = s.grandparentTitle ? `${s.grandparentTitle} — ${s.title}` : s.title;
+      return `<div class="activity-card">
+        <div style="font-size:22px">▶</div>
+        <div class="activity-info">
+          <div class="activity-title">${esc(title)}</div>
+          <div class="activity-meta">${esc(s.User?.title || 'Unknown')} · ${s.Player?.platform || ''}</div>
+          <div class="activity-progress">
+            <div class="activity-progress-fill" style="width:${pct}%"></div>
+          </div>
+        </div>
+        <span class="pill pill-blue">${pct}%</span>
+      </div>`;
+    }).join('');
+  } catch {
+    el.innerHTML = '<div style="color:var(--text3);font-size:12px">Could not load live sessions</div>';
+  }
+}
+
+async function loadRecentlyAdded() {
+  const el = document.getElementById('recently-added');
+  try {
+    const items = await api('/api/recently-added');
+    if (!items?.length) { el.innerHTML = '<div style="color:var(--text3);font-size:12px">None</div>'; return; }
+    el.innerHTML = items.slice(0, 8).map(i => `
+      <div class="media-card">
+        <div class="media-badge">${i.type || 'media'}</div>
+        <div class="media-title">${esc(i.grandparentTitle || i.title)}</div>
+        <div class="media-sub">${i.year ? i.year : ''}</div>
+      </div>`).join('');
+  } catch {
+    el.innerHTML = '<div style="color:var(--text3);font-size:12px">Could not load</div>';
+  }
+}
+
+// ── USERS ────────────────────────────────────────────────
+async function loadUsers() {
+  try {
+    allUsers = await api('/api/users');
+    const tbody = document.getElementById('users-tbody');
+    tbody.innerHTML = allUsers.map(u => `
+      <tr>
+        <td><div class="user-cell">
+          <div class="avatar">${u.name ? u.name[0] : '?'}</div>
+          <span>${esc(u.name)}</span>
+        </div></td>
+        <td>
+          <div class="email-edit-wrap" id="email-wrap-${u.id}">
+            <span class="email-display" id="email-display-${u.id}">${u.email || '<span style="color:var(--text3)">Not set</span>'}</span>
+            <input class="email-input" id="email-input-${u.id}" type="email" value="${u.email}" placeholder="user@example.com"
+              onkeydown="if(event.key==='Enter')saveEmail('${u.id}');if(event.key==='Escape')cancelEmailEdit('${u.id}')"/>
+          </div>
+        </td>
+        <td style="color:var(--text3);font-size:11px">${u.lastSeen ? new Date(u.lastSeen * 1000).toLocaleDateString() : '—'}</td>
+        <td style="font-size:12px;color:var(--text2)">${u.totalPlays ?? '—'}</td>
+        <td><span class="pill ${u.isActive ? 'pill-green' : 'pill-gray'}">${u.isActive ? 'Subscribed' : 'No email'}</span></td>
+        <td style="white-space:nowrap">
+          <button class="btn btn-ghost btn-sm" onclick="editEmail('${u.id}')">Edit email</button>
+          <button class="btn btn-ghost btn-sm" onclick="jumpPreview('${u.id}')" style="margin-left:4px">Preview</button>
+        </td>
+      </tr>`).join('');
+  } catch (e) {
+    toast('Could not load users: ' + e.message, 'err');
+  }
+}
+
+function editEmail(id) {
+  document.getElementById('email-display-' + id).style.display = 'none';
+  const inp = document.getElementById('email-input-' + id);
+  inp.style.display = '';
+  inp.focus();
+}
+function cancelEmailEdit(id) {
+  document.getElementById('email-display-' + id).style.display = '';
+  document.getElementById('email-input-' + id).style.display = 'none';
+}
+async function saveEmail(id) {
+  const email = document.getElementById('email-input-' + id).value.trim();
+  try {
+    await api(`/api/users/${id}/email`, { method: 'POST', body: JSON.stringify({ email }) });
+    const disp = document.getElementById('email-display-' + id);
+    disp.innerHTML = email || '<span style="color:var(--text3)">Not set</span>';
+    cancelEmailEdit(id);
+    toast('Email saved', 'ok');
+  } catch (e) {
+    toast('Save failed: ' + e.message, 'err');
+  }
+}
+function jumpPreview(userId) { goPage('preview'); initPreviewPage(userId); }
+
+// ── SEND ─────────────────────────────────────────────────
+async function loadSendUsers() {
+  if (!allUsers.length) allUsers = await api('/api/users').catch(() => []);
+  const eligible = allUsers.filter(u => u.isActive);
+  document.getElementById('send-tbody').innerHTML = eligible.length
+    ? eligible.map(u => `
+      <tr>
+        <td><input type="checkbox" class="user-check" value="${u.id}" checked style="accent-color:var(--gold)"/></td>
+        <td><div class="user-cell"><div class="avatar">${u.name[0]}</div><span>${esc(u.name)}</span></div></td>
+        <td style="font-size:11px;color:var(--text2)">${esc(u.email)}</td>
+      </tr>`).join('')
+    : '<tr><td colspan="3" style="color:var(--text3);padding:20px;font-size:12px">No users with email set</td></tr>';
+}
+
+function toggleAll(master) {
+  document.querySelectorAll('.user-check').forEach(c => c.checked = master.checked);
+}
+
+async function sendSelected() {
+  const ids = [...document.querySelectorAll('.user-check:checked')].map(c => c.value);
+  if (!ids.length) { toast('Select at least one user', 'err'); return; }
+  await doSend(ids);
+}
+async function sendAll() {
+  await doSend(null);
+}
+
+async function doSend(userIds) {
+  const log = document.getElementById('send-log');
+  const bar = document.getElementById('send-progress');
+  log.innerHTML = '<span class="info">Collecting stats…</span>\n';
+  bar.style.width = '8%';
+  showOverlay('Sending newsletter…');
+  try {
+    const body = userIds ? { userIds } : {};
+    const res = await api('/api/send', { method: 'POST', body: JSON.stringify(body) });
+    hideOverlay();
+    const results = res.results || [];
+    log.innerHTML = '';
+    results.forEach((r, i) => {
+      bar.style.width = Math.round(((i + 1) / results.length) * 100) + '%';
+      const cls = r.status === 'sent' ? 'ok' : 'fail';
+      const icon = r.status === 'sent' ? '✓' : '✗';
+      log.innerHTML += `<span class="${cls}">${icon} ${esc(r.user)} — ${r.status}${r.error ? ': ' + r.error : ''}</span>\n`;
+      log.scrollTop = log.scrollHeight;
+    });
+    const sent = results.filter(r => r.status === 'sent').length;
+    toast(`Sent ${sent}/${results.length}`, sent === results.length ? 'ok' : 'err');
+  } catch (e) {
+    hideOverlay();
+    log.innerHTML += `<span class="fail">Error: ${esc(e.message)}</span>\n`;
+    toast('Send failed: ' + e.message, 'err');
+  }
+}
+
+// ── PREVIEW ──────────────────────────────────────────────
+async function initPreviewPage(jumpToUserId = null) {
+  if (!allUsers.length) allUsers = await api('/api/users').catch(() => []);
+  const eligible = allUsers.filter(u => u.isActive);
+  const list = document.getElementById('preview-user-list');
+  list.innerHTML = eligible.map(u =>
+    `<button class="user-btn" id="pvbtn-${u.id}" onclick="loadPreviewForUser('${u.id}')">
+      <div class="avatar" style="width:24px;height:24px;font-size:10px">${u.name[0]}</div>
+      <span>${esc(u.name)}</span>
+    </button>`).join('') || '<div style="color:var(--text3);font-size:12px">No eligible users</div>';
+
+  if (jumpToUserId) {
+    loadPreviewForUser(jumpToUserId);
+  } else if (currentPreviewUserId) {
+    document.getElementById('pvbtn-' + currentPreviewUserId)?.classList.add('active');
+  }
+}
+
+async function loadPreviewForUser(userId) {
+  currentPreviewUserId = userId;
+  document.querySelectorAll('.user-btn').forEach(b =>
+    b.classList.toggle('active', b.id === 'pvbtn-' + userId));
+
+  const placeholder = document.getElementById('preview-placeholder');
+  const loading = document.getElementById('preview-loading');
+  const iframe = document.getElementById('preview-iframe');
+
+  placeholder.style.display = 'none';
+  loading.style.display = 'block';
+  iframe.style.display = 'none';
+
+  if (previewCache[userId]) {
+    showPreview(previewCache[userId]);
+    return;
+  }
+
+  try {
+    const data = await api(`/api/preview?userId=${userId}`);
+    previewCache[userId] = data;
+    showPreview(data);
+  } catch (e) {
+    loading.textContent = 'Error: ' + e.message;
+    loading.style.display = 'block';
+  }
+}
+
+function showPreview(data) {
+  const loading = document.getElementById('preview-loading');
+  const iframe = document.getElementById('preview-iframe');
+  document.getElementById('preview-label').textContent = `Preview: ${data.user}`;
+  document.getElementById('btn-send-preview').style.display = '';
+  loading.style.display = 'none';
+  iframe.srcdoc = data.html;
+  iframe.style.display = 'block';
+}
+
+function regeneratePreview() {
+  previewCache = {};
+  if (currentPreviewUserId) loadPreviewForUser(currentPreviewUserId);
+}
+
+async function sendToCurrentPreviewUser() {
+  if (!currentPreviewUserId) return;
+  showOverlay('Sending…');
+  try {
+    const res = await api('/api/send', {
+      method: 'POST',
+      body: JSON.stringify({ userIds: [currentPreviewUserId] }),
+    });
+    hideOverlay();
+    const r = res.results?.[0];
+    toast(r?.status === 'sent' ? '✓ Email sent!' : 'Send failed: ' + r?.error,
+          r?.status === 'sent' ? 'ok' : 'err');
+  } catch (e) {
+    hideOverlay();
+    toast('Error: ' + e.message, 'err');
+  }
+}
+
+// ── SETTINGS ─────────────────────────────────────────────
+async function loadSettings() {
+  try {
+    const s = await api('/api/status');
+    setVal('s-plexUrl', s.plexUrl);
+    setVal('s-tautulliUrl', s.tautulliUrl);
+    setVal('s-smtpHost', s.smtpHost);
+    setVal('s-smtpPort', s.smtpPort);
+    setVal('s-smtpUser', s.smtpUser);
+    setVal('s-smtpFrom', s.smtpFrom);
+    setVal('s-newsletterTitle', s.title);
+    setVal('s-cronSchedule', s.cronSchedule);
+    setVal('s-statsDays', s.statsDays);
+    setVal('s-adminEmail', s.adminEmail);
+    document.getElementById('sidebar-cron').textContent = s.cronSchedule || '0 9 * * 1';
+  } catch (e) {
+    toast('Could not load settings', 'err');
+  }
+}
+
+async function saveSettings() {
+  const payload = {
+    plexUrl: getVal('s-plexUrl'),
+    plexToken: getVal('s-plexToken'),
+    tautulliUrl: getVal('s-tautulliUrl'),
+    tautulliApiKey: getVal('s-tautulliApiKey'),
+    smtpHost: getVal('s-smtpHost'),
+    smtpPort: getVal('s-smtpPort'),
+    smtpUser: getVal('s-smtpUser'),
+    smtpPass: getVal('s-smtpPass'),
+    smtpFrom: getVal('s-smtpFrom'),
+    newsletterTitle: getVal('s-newsletterTitle'),
+    cronSchedule: getVal('s-cronSchedule'),
+    statsDays: getVal('s-statsDays'),
+    adminEmail: getVal('s-adminEmail'),
+  };
+  try {
+    const res = await api('/api/settings', { method: 'POST', body: JSON.stringify(payload) });
+    document.getElementById('settings-msg').textContent = res.message;
+    toast('Settings saved', 'ok');
+    document.getElementById('sidebar-cron').textContent = payload.cronSchedule;
+  } catch (e) {
+    document.getElementById('settings-msg').textContent = e.message;
+    document.getElementById('settings-msg').style.color = 'var(--danger)';
+    toast('Save failed: ' + e.message, 'err');
+  }
+}
+
+async function testConn(service) {
+  const dot = document.getElementById(service + '-dot');
+  const msg = document.getElementById(service + '-msg');
+  dot.className = 'status-dot';
+  msg.textContent = 'Testing…';
+  try {
+    const res = await api('/api/test/' + service);
+    dot.className = 'status-dot ' + (res.ok ? 'ok' : 'fail');
+    msg.textContent = res.message;
+    toast(res.message, res.ok ? 'ok' : 'err');
+  } catch (e) {
+    dot.className = 'status-dot fail';
+    msg.textContent = e.message;
+  }
+}
+
+async function sendTestEmail() {
+  const to = document.getElementById('test-email-to').value.trim();
+  showOverlay('Sending test email…');
+  try {
+    const res = await api('/api/test/email', { method: 'POST', body: JSON.stringify({ to }) });
+    hideOverlay();
+    toast(res.message, res.ok ? 'ok' : 'err');
+  } catch (e) {
+    hideOverlay();
+    toast('Error: ' + e.message, 'err');
+  }
+}
+
+// ── HELPERS ──────────────────────────────────────────────
+function setVal(id, v) { const el = document.getElementById(id); if (el) el.value = v ?? ''; }
+function getVal(id) { return document.getElementById(id)?.value.trim() || ''; }
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── INIT ──────────────────────────────────────────────────
+(async () => {
+  try {
+    const status = await api('/api/status');
+    document.getElementById('sidebar-cron').textContent = status.cronSchedule || '0 9 * * 1';
+  } catch {}
+  refreshDashboard();
+})();
+</script>
+</body>
+</html>
